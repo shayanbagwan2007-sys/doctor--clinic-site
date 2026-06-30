@@ -113,8 +113,8 @@
                 <div class="absolute w-64 h-64 bg-cyan-100 rounded-full blur-2xl -bottom-10 -left-10 -z-10"></div>
                 
                 <!-- Doctor Image Container -->
-                <div class="relative w-full max-w-[360px] aspect-[4/5] bg-gradient-to-tr from-slate-100 to-teal-50 rounded-[40px] shadow-2xl p-4 border border-white/60 overflow-hidden group">
-                    <img id="doctor-img" src="dr-ashok-mittal.png" alt="Dr. Ashok Mittal" class="w-full h-full object-cover object-center rounded-[32px] scale-100 transition duration-500 group-hover:scale-105" onerror="handleImageFallback(this)">
+                <div class="relative w-full max-w-[360px] aspect-[4/5] bg-white rounded-[40px] shadow-2xl p-4 border border-slate-100 overflow-hidden group">
+                    <img id="doctor-img" src="images/dr-ashok-mittal.png" alt="Dr. Ashok Mittal" class="w-full h-full object-contain object-bottom scale-100 transition duration-500 group-hover:scale-105" onerror="handleImageFallback(this)">
                     
                     <!-- Premium Glass Tag Overlay -->
                     <div class="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-slate-100/50 text-center">
@@ -164,11 +164,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             
             <div class="lg:col-span-5 relative reveal">
-                <!-- Graphic Frame showing modern clean clinic interior -->
-                <div class="aspect-[4/3] w-full rounded-[32px] bg-slate-200 flex items-center justify-center relative overflow-hidden shadow-lg border border-slate-200/50">
-                    <div class="absolute inset-0 bg-teal-900/10 flex items-center justify-center text-slate-600 font-semibold text-sm">
-                        [Mansarovar Consultation Suite Picture]
-                    </div>
+                <!-- Actual photo frame replacing the placeholder -->
+                <div class="aspect-[4/3] w-full rounded-[32px] overflow-hidden shadow-lg border border-slate-200/50 relative group bg-slate-100">
+                    <img src="images/mansarovar-suite.jpg" alt="Mansarovar Consultation Suite" class="w-full h-full object-cover transition duration-500 group-hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80'">
+                    <div class="absolute inset-0 bg-teal-950/10 pointer-events-none"></div>
                 </div>
                 <div class="absolute -bottom-6 -right-6 bg-white p-5 rounded-2xl shadow-md border border-slate-100 flex items-center gap-3">
                     <div class="w-10 h-10 bg-teal-50 text-teal-700 flex items-center justify-center rounded-xl font-bold">✓</div>
