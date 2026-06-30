@@ -14,7 +14,36 @@
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased">
 
-    <div class="min-h-screen flex flex-col">
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-tr from-slate-900 to-teal-950 px-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md border border-slate-100">
+            <div class="text-center mb-6">
+                <span class="text-3xl">🔑</span>
+                <h1 class="text-2xl font-black text-slate-950 mt-2">Staff Verification</h1>
+                <p class="text-xs text-slate-400 mt-1">Access restricted to authorized personnel</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Username</label>
+                    <input required type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="Enter username">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Password</label>
+                    <input required type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" placeholder="••••••••">
+                </div>
+                
+                <div id="login-error" class="text-xs text-rose-500 font-bold hidden bg-rose-50 p-2.5 rounded-lg border border-rose-100"></div>
+
+                <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl transition shadow-md">
+                    Access Console
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Authenticated Dashboard Panel -->
+    <div id="dashboard-screen" class="min-h-screen flex flex-col hidden">
         <!-- Dashboard Top Header -->
         <header class="bg-slate-900 text-white py-5 px-6 shadow-md flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -22,16 +51,23 @@
                     <h1 class="text-xl font-bold text-teal-400">Dr. Ashok Mittal</h1>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Internal Management Desk</p>
                 </div>
-                <!-- Dynamic Refresh Status Badge (Polled background sync metric) -->
+                <!-- Dynamic Refresh Status Badge -->
                 <div class="hidden sm:flex items-center gap-1.5 ml-4 px-2.5 py-1 rounded-full bg-slate-800 text-[10px] text-teal-300 font-bold border border-slate-700">
-                    <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>Auto-Sync Active (1m)</span>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <!-- Live Last Updated String (No lag indicators) -->
+            <div class="flex items-center gap-3">
+                <!-- Manual Refresh Button -->
+                <button onclick="loadData()" class="bg-slate-800 hover:bg-slate-700 text-teal-300 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-700 flex items-center gap-2 transition">
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6H16"/>
+                    </svg>
+                    Refresh List
+                </button>
+                <!-- Live Last Updated String -->
                 <span id="last-updated-time" class="hidden md:inline text-xs text-slate-400 font-medium">Last synced: Loading...</span>
-                <a href="/" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold border border-slate-700 transition">
+                <a href="/" class="bg-slate-850 hover:bg-slate-750 text-white px-4 py-2 rounded-lg text-xs font-semibold border border-slate-750 transition">
                     View Site ➔
                 </a>
             </div>
@@ -124,22 +160,54 @@
         </main>
     </div>
 
-    <!-- Connected JS Logic with Background Poll (No Lag Auto-Refresh) -->
+    <!-- Connected JS Logic with Background Poll -->
     <script>
+        // Authentication Configuration
+        const loginForm = document.getElementById('login-form');
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const loginError = document.getElementById('login-error');
+
         window.addEventListener('load', () => {
-            // Initial data pull
+            // Check session storage cache for active login session
+            if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
+                showDashboard();
+            }
+        });
+
+        // Handle authorization submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Simple login credentials check
+            if (user === 'admin' && pass === 'mittal@2026') {
+                sessionStorage.setItem('isAdminAuthenticated', 'true');
+                showDashboard();
+            } else {
+                loginError.classList.remove('hidden');
+                loginError.textContent = 'Invalid credentials. Please verify and try again.';
+            }
+        });
+
+        function showDashboard() {
+            loginScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
+            
+            // Trigger initial data fetch
             loadData();
             
-            // Background interval: poll backend safely every 60 seconds (1 minute) without full-page reloads
+            // Poll for fresh data once every 60 seconds (1 minute)
             setInterval(loadData, 60000);
-        });
+        }
 
         // Fetch master data (appointments + announcement) from Express backend
         async function loadData() {
             const syncingLabel = document.getElementById('syncing-indicator');
             const syncDot = document.getElementById('sync-dot');
             
-            // Show background sync is occurring
+            // Update UI indicators to show progress
             if (syncingLabel) syncingLabel.classList.remove('hidden');
             if (syncDot) syncDot.className = "w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping";
 
@@ -147,7 +215,7 @@
                 const response = await fetch('/api/data');
                 const data = await response.json();
                 
-                // Populate announcement field (only if user isn't currently editing to avoid cursor jump)
+                // Set announcement input value unless currently active (to retain edit cursor)
                 const announcementText = data.announcement || '';
                 const noticeField = document.getElementById('notice-text');
                 if (document.activeElement !== noticeField) {
@@ -163,20 +231,20 @@
                     statusLabel.className = "text-sm font-bold text-emerald-600 mt-2";
                 }
 
-                // Update booking counter metric
+                // Update booking metrics count
                 document.getElementById('total-bookings-count').textContent = data.appointments ? data.appointments.length : 0;
                 
-                // Populate appointments list without lagging the inputs
+                // Redraw table registry
                 renderAppointments(data.appointments);
 
-                // Update Last Synced live timestamp
+                // Timestamp updates
                 const now = new Date();
                 const pad = (num) => String(num).padStart(2, '0');
                 document.getElementById('last-updated-time').textContent = `Last synced: ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
             } catch (err) {
                 console.error('Error fetching clinic data from database', err);
             } finally {
-                // Clear background sync indicators
+                // Return status animation to default pulse
                 if (syncingLabel) syncingLabel.classList.add('hidden');
                 if (syncDot) syncDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
             }
@@ -244,7 +312,7 @@
                     <td class="py-4 px-4 text-right space-x-1 whitespace-nowrap">
                         <button onclick="updateStatus(${appt.id}, 'Confirmed')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] px-2 py-1 rounded font-bold transition">Confirm</button>
                         <button onclick="updateStatus(${appt.id}, 'Cancelled')" class="bg-rose-600 hover:bg-rose-700 text-white text-[10px] px-2 py-1 rounded font-bold transition">Cancel</button>
-                        <button onclick="deleteAppointment(${appt.id})" class="text-slate-400 hover:text-slate-600 text-sm ml-2">✕</button>
+                        <button onclick="deleteAppointment(${appt.id})" class="text-slate-400 hover:text-slate-600 text-sm ml-2 font-bold">✕</button>
                     </td>
                 </tr>
             `).join('');
